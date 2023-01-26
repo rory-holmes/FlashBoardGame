@@ -1,7 +1,8 @@
 import pygame
 from pygame import gfxdraw
 import json
-import math
+from enum import Enum
+import os
 
 """ Parent class for a 5x5 grid pygame """
 
@@ -27,11 +28,11 @@ class Game:
                 3: (255, 0, 0),        # red
                 4: (64, 224, 208)}     # turquoise
         
-        self.highscore = self.get_highscore()
+        self.game_difficulty = difficulty.NONE
+        self.get_highscore()
         self.score = 0
         self.max_time = 20
         self.screen = pygame.display.set_mode(self.size)
-        self.game_difficulty = math.inf
 
     def update_screen(self):
         """ Updates screen size """
@@ -74,7 +75,7 @@ class Game:
         self.update_screen()
 
         if self.score > self.highscore:
-            self.update_highscore(self.score)
+            self.update_highscore()
 
         for _ in range(3):
             for num in [0,3]:
@@ -92,16 +93,28 @@ class Game:
     def get_highscore(self):
         """ Returns the highscore for the current game """
 
+        if not os.path.exists('matrices.json'):
+            setup_matrices()
+        if not os.path.exists('high_scores.json'):
+            setup_highscores()
+
         with open("high_scores.json", "r") as f:
             highscores = json.load(f)
-        return highscores[self.game]
+        
+        if self.game_difficulty != difficulty.NONE:
+            self.highscore = highscores[self.game][self.game_difficulty.name]
+        else:
+            self.highscore = highscores[self.game]
 
     def update_highscore(self):
         """ Updates the highscore for he current game """
 
         with open("high_scores.json", "r+") as f:
             highscores = json.load(f)
-            highscores[self.game] = self.score
+            if self.game_difficulty != difficulty.NONE:
+                highscores[self.game][self.game_difficulty.name] = self.score
+            else:
+                highscores[self.game] = self.score
             f.seek(0)
             json.dump(highscores, f)
             f.truncate()
@@ -124,7 +137,7 @@ class Game:
         give_up_text = font.render("Give Up", True, (255,255,255))
 
         # Create the give up button
-        self.give_up_button = pygame.Rect(self.width//2 - 50, self.height - 60, 100, 50)
+        self.give_up_button = pygame.Rect(self.width//2 - 50, self.height - 50, 100, 40)
 
         # Draw the give up button
         self.screen.blit(give_up_text, (self.give_up_button.x + (self.give_up_button.width/2 - give_up_text.get_width()/2), self.give_up_button.y + (self.give_up_button.height/2 - give_up_text.get_height()/2)))
@@ -140,16 +153,16 @@ class Game:
 
         # Draw the score
         score_text = font.render("Score: " + str(self.score), True, (255, 255, 255))
-        self.screen.blit(score_text, (self.width - 150, self.height - 25))
+        self.screen.blit(score_text, (self.width - ((7 + len(str(self.score))) * 11), self.give_up_button.y + (self.give_up_button.height/2 - give_up_text.get_height()/2)))
 
         # Calculate the time remaining
         time_remaining = round(self.max_time - (self.time_passed / 1000), 2)
 
         # Create a text surface with the time remaining
-        text = font.render(str(time_remaining), True, (255, 255, 255))
+        time_text = font.render(str(time_remaining), True, (255, 255, 255))
 
         # Draw the text surface on the screen at the bottom left corner
-        self.screen.blit(text, (10, self.height - 25))
+        self.screen.blit(time_text, (10, self.give_up_button.y + (self.give_up_button.height/2 - give_up_text.get_height()/2)))
 
         # Update the display
         pygame.display.flip()
@@ -186,16 +199,24 @@ class Game:
                     if easy_button.collidepoint(pos):
                         self.row_num = 4
                         self.col_num = 4
+                        self.game_difficulty = difficulty.EASY
                         running = False
+                        self.get_highscore()
+                        self.run()
                     elif medium_button.collidepoint(pos):
                         self.row_num = 5
                         self.col_num = 5
+                        self.game_difficulty = difficulty.MEDIUM
                         running = False
+                        self.get_highscore()
+                        self.run()
                     elif hard_button.collidepoint(pos):
                         self.row_num = 6
                         self.col_num = 6
+                        self.game_difficulty = difficulty.HARD
                         running = False
-                self.update_screen()
+                        self.get_highscore()
+                        self.run()
 
             # Draw the buttons on the screen
             self.screen.fill((0, 0, 0))
@@ -207,4 +228,27 @@ class Game:
             pygame.draw.rect(self.screen, (255, 255, 255), hard_button, 2)
             pygame.display.update()
         
-        
+
+class difficulty(Enum):
+    NONE = 0,
+    EASY = 1,
+    MEDIUM = 2,
+    HARD = 3
+
+def setup_highscores():
+    with open('high_scores.json', 'w') as f: 
+        json.dump({"Memory": {"EASY": 0, "MEDIUM": 0, "HARD": 0}, "Trace": 0}, f)
+
+def setup_matrices():
+    with open('matrices.json', 'w') as f:
+        json.dump({"1": [[[0, 1, 0, 0, 0], [1, 0, 1, 0, 0], [0, 1, 0, 1, 0], [0, 0, 1, 0, 1], [0, 0, 0, 1, 0]], [[0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [0, 0, 2, 0, 0], [0, 1, 0, 0, 0], [0, 0, 0, 0, 0]], [[1, 0, 0, 0, 0], [0, 1, 0, 1, 0], [0, 0, 2, 0, 0], [0, 1, 0, 0, 0], [0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0], [0, 1, 1, 1, 2], [0, 0, 0, 0, 1], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]], 
+                    "2": [[[0, 0, 0, 0, 0], [0, 2, 3, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0], [0, 1, 0, 1, 0], [0, 0, 2, 0, 0], [1, 2, 0, 0, 0], [0, 0, 1, 0, 0]], [[0, 0, 0, 2, 0], [0, 0, 3, 0, 0], [0, 1, 0, 1, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [0, 0, 2, 0, 0], [0, 1, 0, 0, 0], [1, 0, 0, 0, 0]]], 
+                    "3": [[[0, 0, 1, 1, 0], [0, 1, 3, 2, 0], [0, 0, 1, 0, 1], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0], [0, 1, 2, 1, 0], [0, 2, 0, 0, 0], [0, 1, 2, 3, 0], [0, 0, 0, 1, 0]]], 
+                    "4": [[[0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [0, 1, 3, 0, 1], [0, 0, 0, 1, 0], [0, 0, 0, 0, 0]], [[1, 2, 1, 0, 2], [0, 0, 0, 3, 0], [0, 0, 1, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]], [[0, 0, 0, 1, 0], [1, 0, 2, 0, 0], [0, 3, 0, 0, 0], [0, 0, 1, 0, 0], [0, 0, 0, 0, 0]], [[0, 0, 0, 0, 0], [0, 1, 0, 1, 0], [0, 0, 2, 0, 0], [0, 0, 0, 3, 0], [0, 0, 1, 0, 1]]], 
+                    "5": [[[0, 0, 0, 0, 1], [0, 0, 0, 0, 2], [0, 1, 0, 0, 2], [2, 0, 0, 0, 2], [3, 2, 1, 2, 3]], [[0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [0, 1, 0, 0, 2], [2, 0, 0, 1, 0], [2, 2, 3, 1, 0]], [[0, 0, 0, 0, 0], [0, 2, 0, 0, 0], [0, 0, 3, 0, 0], [0, 0, 0, 3, 0], [0, 0, 0, 0, 2]]], 
+                    "6": [[[0, 0, 0, 0, 0], [0, 1, 0, 1, 0], [0, 2, 3, 2, 0], [0, 0, 1, 3, 2], [2, 2, 1, 1, 0]], [[0, 2, 1, 0, 0], [0, 1, 0, 3, 0], [0, 0, 0, 2, 1], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]]], 
+                    "7": [[[1, 2, 0, 0, 0], [1, 3, 1, 0, 0], [0, 2, 0, 0, 0], [0, 3, 2, 1, 0], [0, 0, 0, 3, 2]], [[0, 0, 0, 0, 0], [0, 3, 3, 0, 0], [3, 0, 0, 1, 0], [0, 2, 1, 0, 0], [0, 0, 0, 0, 0]]], 
+                    "8": [[[1, 0, 0, 0, 2], [2, 3, 1, 0, 3], [0, 2, 2, 2, 0], [0, 0, 3, 0, 0], [0, 2, 2, 3, 1]], [[0, 0, 0, 0, 1], [0, 2, 0, 2, 0], [0, 0, 3, 0, 2], [0, 1, 0, 1, 0], [0, 0, 0, 0, 0]]], 
+                    "9": [[[2, 0, 0, 3, 3], [3, 0, 2, 0, 2], [0, 2, 0, 1, 2], [0, 2, 3, 2, 1], [1, 0, 1, 2, 0]], [[2, 1, 3, 2, 1], [1, 0, 0, 2, 0], [0, 0, 3, 0, 0], [0, 2, 0, 2, 0], [1, 0, 0, 0, 1]]], 
+                    "10": [[[0, 0, 2, 0, 0], [0, 1, 1, 3, 2], [0, 2, 3, 2, 1], [3, 2, 0, 2, 2], [2, 0, 2, 3, 2]], [[2, 0, 0, 1, 3], [1, 3, 0, 0, 2], [2, 0, 1, 0, 1], [2, 0, 0, 2, 2], [0, 1, 0, 0, 3]], [[2, 0, 0, 0, 0], [0, 3, 1, 0, 0], [0, 2, 3, 0, 2], [1, 0, 0, 3, 0], [2, 3, 2, 0, 0]], [[0, 0, 0, 0, 0], [0, 2, 0, 0, 0], [0, 0, 3, 0, 0], [1, 0, 0, 2, 0], [0, 3, 2, 0, 1]]]
+                    }, f)

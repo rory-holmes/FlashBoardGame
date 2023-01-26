@@ -13,13 +13,10 @@ class MemoryGame(Game):
         self.score = 0
         self.time_passed = 0
         self.max_time = 10
-
-        super().difficulty_screen()
-
         # Create a variable to store the current pattern
         self.pattern = [(random.randint(0, self.row_num-1), random.randint(0, self.col_num-1))]
-        self.run()
 
+        super().difficulty_screen()
 
     def show_pattern(self):
         """ Runs the animation to show the current pattern """
@@ -63,7 +60,7 @@ class MemoryGame(Game):
         i, j = self.pattern[current_index][0], self.pattern[current_index][1]
 
         if self.score > self.highscore:
-            self.update_highscore(self.score)
+            self.update_highscore()
 
         for _ in range(3):
             for colour in [(3,4), (0, 0)]:
@@ -120,8 +117,8 @@ class MemoryGame(Game):
                     pos = pygame.mouse.get_pos()
 
                     # Check if the user clicks on a circle
-                    for i in range(5):
-                        for j in range(5):
+                    for i in range(self.col_num):
+                        for j in range(self.row_num):
                             circle = pygame.Rect(i*100, j*100, 80, 80)
                             if circle.collidepoint(pos):
                                 # Check if the corect circle is clicked
