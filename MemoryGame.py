@@ -101,7 +101,7 @@ class MemoryGame(Game):
             # If max time has passed
             if self.time_passed > self.max_time * 1000:
                 # Restart Game
-                self.lose()
+                super().lose()
                 running = False
             # Runs the next level animation
             if next_level:

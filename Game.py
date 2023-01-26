@@ -54,7 +54,7 @@ class Game:
 
         # Create the give up button text
         give_up_text = font.render("Highscore: " + str(self.highscore), True, (255,255,255))
-        self.screen.blit(give_up_text, (self.width//2 - 50 , self.height - 45))
+        self.screen.blit(give_up_text, (self.width//2 - ((11 + len(str(self.highscore))) * 5) , self.height - 45))
 
         for _ in range(3):
             for num in [0, 1]:
@@ -68,6 +68,7 @@ class Game:
                 pygame.event.pump()
                 pygame.display.flip()
                 pygame.time.wait(500)
+        self.update_screen()
 
     def lose(self):
         """ Runs when game is finished, flashes all circles red 3 times, and calls update_highscore() if necessary """
@@ -76,6 +77,15 @@ class Game:
 
         if self.score > self.highscore:
             self.update_highscore()
+
+        font = pygame.font.Font(None, 25)
+        # Draw the score
+        score_text = font.render("Score: " + str(self.score), True, (255, 255, 255))
+        self.screen.blit(score_text, (self.width - ((7.55 + min(4, len(str(self.highscore)))) * 11), self.give_up_button.y - 15 + (self.give_up_button.height/2 - self.give_up_text.get_height()/2)))
+        # Draw the highscore
+        highscore_text = font.render("Highscore: " + str(self.highscore), True, (255, 255, 255))
+        self.screen.blit(highscore_text, (self.width - ((11 + min(4, len(str(self.highscore)))) * 11), 15 + self.give_up_button.y + (self.give_up_button.height/2 - self.give_up_text.get_height()/2)))
+
 
         for _ in range(3):
             for num in [0,3]:
@@ -89,6 +99,7 @@ class Game:
                 pygame.event.pump()
                 pygame.display.flip()
                 pygame.time.wait(500)
+        self.update_screen()
 
     def get_highscore(self):
         """ Returns the highscore for the current game """
@@ -131,16 +142,16 @@ class Game:
         self.screen.fill((0, 0, 0))
 
         # Create the font
-        font = pygame.font.Font(None, 30)
+        font = pygame.font.Font(None, 25)
 
         # Create the give up button text
-        give_up_text = font.render("Give Up", True, (255,255,255))
+        self.give_up_text = font.render("Give Up", True, (255,255,255))
 
         # Create the give up button
         self.give_up_button = pygame.Rect(self.width//2 - 50, self.height - 50, 100, 40)
 
         # Draw the give up button
-        self.screen.blit(give_up_text, (self.give_up_button.x + (self.give_up_button.width/2 - give_up_text.get_width()/2), self.give_up_button.y + (self.give_up_button.height/2 - give_up_text.get_height()/2)))
+        self.screen.blit(self.give_up_text, (self.give_up_button.x + (self.give_up_button.width/2 - self.give_up_text.get_width()/2), self.give_up_button.y + (self.give_up_button.height/2 - self.give_up_text.get_height()/2)))
         pygame.draw.rect(self.screen, (255, 0, 0), self.give_up_button, 2)
 
 
@@ -153,7 +164,10 @@ class Game:
 
         # Draw the score
         score_text = font.render("Score: " + str(self.score), True, (255, 255, 255))
-        self.screen.blit(score_text, (self.width - ((7 + len(str(self.score))) * 11), self.give_up_button.y + (self.give_up_button.height/2 - give_up_text.get_height()/2)))
+        self.screen.blit(score_text, (self.width - ((7.55 + min(4, len(str(self.highscore)))) * 11), self.give_up_button.y - 15 + (self.give_up_button.height/2 - self.give_up_text.get_height()/2)))
+        # Draw the highscore
+        highscore_text = font.render("Highscore: " + str(self.highscore), True, (255, 255, 255))
+        self.screen.blit(highscore_text, (self.width - ((11 + min(4, len(str(self.highscore)))) * 11), 15 + self.give_up_button.y + (self.give_up_button.height/2 - self.give_up_text.get_height()/2)))
 
         # Calculate the time remaining
         time_remaining = round(self.max_time - (self.time_passed / 1000), 2)
@@ -162,7 +176,7 @@ class Game:
         time_text = font.render(str(time_remaining), True, (255, 255, 255))
 
         # Draw the text surface on the screen at the bottom left corner
-        self.screen.blit(time_text, (10, self.give_up_button.y + (self.give_up_button.height/2 - give_up_text.get_height()/2)))
+        self.screen.blit(time_text, (10, self.give_up_button.y + (self.give_up_button.height/2 - self.give_up_text.get_height()/2)))
 
         # Update the display
         pygame.display.flip()
@@ -197,26 +211,16 @@ class Game:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     pos = pygame.mouse.get_pos()
                     if easy_button.collidepoint(pos):
-                        self.row_num = 4
-                        self.col_num = 4
-                        self.game_difficulty = difficulty.EASY
+                        self.set_diffculty(difficulty.EASY)
                         running = False
-                        self.get_highscore()
-                        self.run()
+
                     elif medium_button.collidepoint(pos):
-                        self.row_num = 5
-                        self.col_num = 5
-                        self.game_difficulty = difficulty.MEDIUM
+                        self.set_diffculty(difficulty.MEDIUM)
                         running = False
-                        self.get_highscore()
-                        self.run()
+
                     elif hard_button.collidepoint(pos):
-                        self.row_num = 6
-                        self.col_num = 6
-                        self.game_difficulty = difficulty.HARD
+                        self.set_diffculty(difficulty.HARD)
                         running = False
-                        self.get_highscore()
-                        self.run()
 
             # Draw the buttons on the screen
             self.screen.fill((0, 0, 0))
@@ -227,7 +231,25 @@ class Game:
             self.screen.blit(hard_text, (self.width//2 - hard_text.get_width()//2, self.height//2 + 90))
             pygame.draw.rect(self.screen, (255, 255, 255), hard_button, 2)
             pygame.display.update()
-        
+    
+    def set_diffculty(self, complexity):
+        """ Sets the difficulty paramaters for the different games """
+
+        self.game_difficulty = complexity
+        if self.game == "Memory":
+            if self.game_difficulty == difficulty.EASY:
+                self.row_num = 4
+                self.col_num = 4
+            if self.game_difficulty == difficulty.MEDIUM:
+                self.row_num = 5
+                self.col_num = 5
+            if self.game_difficulty == difficulty.HARD:
+                self.row_num = 6
+                self.col_num = 6
+
+        self.get_highscore()
+        self.run()
+
 
 class difficulty(Enum):
     NONE = 0,
