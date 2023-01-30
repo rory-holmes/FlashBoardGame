@@ -32,6 +32,7 @@ class Game:
         self.get_highscore()
         self.score = 0
         self.max_time = 20
+        self.time_passed = 0
         self.screen = pygame.display.set_mode(self.size)
 
     def update_screen(self):
@@ -192,14 +193,14 @@ class Game:
         font = pygame.font.Font(None, 30)
 
         # Create the run_trace button
-        easy_button = pygame.Rect(self.width//2 - 100, self.height//2 - 75, 200, 50)
+        easy_button = pygame.Rect(self.width//2 - 100, self.height//3 - 75, 200, 50)
         easy_text = font.render("Easy", True, (255, 255, 255))
 
         # Create the memory button
-        medium_button = pygame.Rect(self.width//2 - 100, self.height//2, 200, 50)
+        medium_button = pygame.Rect(self.width//2 - 100, self.height//3, 200, 50)
         medium_text = font.render("Medium", True, (255, 255, 255))
 
-        hard_button = pygame.Rect(self.width//2 - 100, self.height//2 + 75, 200, 50)
+        hard_button = pygame.Rect(self.width//2 - 100, self.height//3 + 75, 200, 50)
         hard_text = font.render("Hard", True, (255, 255, 255))
 
         # Create a loop to run the menu
@@ -224,11 +225,11 @@ class Game:
 
             # Draw the buttons on the screen
             self.screen.fill((0, 0, 0))
-            self.screen.blit(easy_text, (self.width//2 - easy_text.get_width()//2, self.height//2 - 60))
+            self.screen.blit(easy_text, (self.width//2 - easy_text.get_width()//2, self.height//3 - 60))
             pygame.draw.rect(self.screen, (255, 255, 255), easy_button, 2)
-            self.screen.blit(medium_text, (self.width//2 - medium_text.get_width()//2, self.height//2 + 15))
+            self.screen.blit(medium_text, (self.width//2 - medium_text.get_width()//2, self.height//3 + 15))
             pygame.draw.rect(self.screen, (255, 255, 255), medium_button, 2)
-            self.screen.blit(hard_text, (self.width//2 - hard_text.get_width()//2, self.height//2 + 90))
+            self.screen.blit(hard_text, (self.width//2 - hard_text.get_width()//2, self.height//3 + 90))
             pygame.draw.rect(self.screen, (255, 255, 255), hard_button, 2)
             pygame.display.update()
     
@@ -236,7 +237,7 @@ class Game:
         """ Sets the difficulty paramaters for the different games """
 
         self.game_difficulty = complexity
-        if self.game == "Memory":
+        if self.game == "Memory" or self.game == "Snake":
             if self.game_difficulty == difficulty.EASY:
                 self.row_num = 4
                 self.col_num = 4
@@ -247,6 +248,7 @@ class Game:
                 self.row_num = 6
                 self.col_num = 6
 
+        self.matrix = [[0 for _ in range(self.row_num)] for _ in range(self.col_num)]
         self.get_highscore()
         self.run()
 
@@ -259,7 +261,7 @@ class difficulty(Enum):
 
 def setup_highscores():
     with open('high_scores.json', 'w') as f: 
-        json.dump({"Memory": {"EASY": 0, "MEDIUM": 0, "HARD": 0}, "Trace": 0}, f)
+        json.dump({"Memory": {"EASY": 0, "MEDIUM": 0, "HARD": 0}, "Trace": 0, "Snake": {"EASY": 0, "MEDIUM": 0, "HARD": 0}}, f)
 
 def setup_matrices():
     with open('matrices.json', 'w') as f:

@@ -1,6 +1,7 @@
 import pygame
 import TraceGame
 import MemoryGame
+import SnakeGame
 
 def main_menu():
     # Set the size of the window
@@ -19,12 +20,16 @@ def main_menu():
     font = pygame.font.Font(None, 30)
 
     # Create the run_trace button
-    run_trace_button = pygame.Rect(width//2 - 100, height//2 - 75, 200, 50)
+    run_trace_button = pygame.Rect(width//2 - 100, height//3 - 75, 200, 50)
     run_trace_text = font.render("Trace", True, (255, 255, 255))
 
     # Create the memory button
-    memory_button = pygame.Rect(width//2 - 100, height//2, 200, 50)
+    memory_button = pygame.Rect(width//2 - 100, height//3, 200, 50)
     memory_text = font.render("Memory", True, (255, 255, 255))
+
+    # Create the memory button
+    snake_button = pygame.Rect(width//2 - 100, height//3 + 75, 200, 50)
+    snake_text = font.render("Snake", True, (255, 255, 255))
 
     # Create a loop to run the menu
     running = True
@@ -40,16 +45,22 @@ def main_menu():
                 elif memory_button.collidepoint(pos):
                     # Start the memory game
                     MemoryGame.MemoryGame()
-
+                elif snake_button.collidepoint(pos):
+                    # Start the snake game
+                    SnakeGame.SnakeGame()
             screen = pygame.display.set_mode(size)
 
 
         # Draw the buttons on the screen
         screen.fill((0, 0, 0))
-        screen.blit(run_trace_text, (width//2 - run_trace_text.get_width()//2, height//2 - 60))
+        
+        screen.blit(run_trace_text, (width//2 - run_trace_text.get_width()//2, height//3 - 60))
         pygame.draw.rect(screen, (255, 255, 255), run_trace_button, 2)
-        screen.blit(memory_text, (width//2 - memory_text.get_width()//2, height//2 + 15))
+        screen.blit(memory_text, (width//2 - memory_text.get_width()//2, height//3 + 15))
         pygame.draw.rect(screen, (255, 255, 255), memory_button, 2)
+        screen.blit(snake_text, (width//2 - snake_text.get_width()//2, height//3 + 90))
+        pygame.draw.rect(screen, (255, 255, 255), snake_button, 2)
+
         pygame.display.update()
 
     # Quit pygame
