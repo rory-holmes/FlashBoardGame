@@ -26,7 +26,10 @@ class Game:
                 1: (0, 255, 0),        # green
                 2: (255, 255, 0),      # yellow
                 3: (255, 0, 0),        # red
-                4: (64, 224, 208)}     # turquoise
+                4: (64, 224, 208),     # turquoise
+                5: (32, 112, 208),     # blue
+                6: (0, 0, 0)           # black
+                }     
         
         self.game_difficulty = difficulty.NONE
         self.get_highscore()
