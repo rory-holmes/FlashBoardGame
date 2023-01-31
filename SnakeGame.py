@@ -32,7 +32,7 @@ class SnakeGame(Game):
         """ Moves snake in the given direction 
         Inputs:
         -------
-        direction - (x, y) for -1 <= x, y <= 1 """
+        direction - (y, x) for -1 <= x, y <= 1 """
 
         tail_x, tail_y = self.snake[0][0], self.snake[0][1]
         head_x, head_y = self.snake[-1][0], self.snake[-1][1]
@@ -68,6 +68,12 @@ class SnakeGame(Game):
         del self.snake[0]
         self.snake.append(new_head)
 
+    def change_direction(self, new_dir):
+        """ Changes the snakes direction if its not opposite the current direction """
+        
+        result = ((self.current_dir[0] + new_dir[0]), (self.current_dir[1] + new_dir[1]))
+        if not result == (0, 0):
+            self.current_dir = new_dir
 
     def increase_snake(self):
         """ Adds another circle to the tail of the snake """
@@ -82,6 +88,8 @@ class SnakeGame(Game):
         self.set_next_food()
     
     def lose(self, new_head):
+        """ Overwrites loss animation """
+
         if self.score > self.highscore:
             self.update_highscore()
 
@@ -92,17 +100,10 @@ class SnakeGame(Game):
                 pygame.time.wait(400)
         self.running = False
 
-    def change_direction(self, new_dir):
-        """ Changes the snakes direction if its not opposite the current direction """
-
-        result = ((self.current_dir[0] + new_dir[0]), (self.current_dir[1], + new_dir[1]))
-        if not result == (0, 0):
-            self.current_dir = new_dir
-
     def run(self):
         """ Runs the main game loop """
         self.start()
-        self.matrix = [[6 for _ in range(self.row_num)] for _ in range(self.col_num)]
+        self.matrix = [[6 for _ in range(self.col_num)] for _ in range(self.row_num)]
         self.set_next_food()
 
         # Set the title of the window
@@ -125,15 +126,15 @@ class SnakeGame(Game):
                 
                 if event.type == pygame.QUIT:
                     self.running = False
-                if event.type == pygame.KEYDOWN:
+                if event.type == pygame.KEYDOWN: #BTW this is going to be confusing when you get back
                     if event.key == pygame.K_LEFT:
-                        self.change_direction((-1,0))
-                    elif event.key == pygame.K_RIGHT:
-                        self.change_direction((1,0))
-                    elif event.key == pygame.K_UP:
                         self.change_direction((0, -1))
-                    elif event.key == pygame.K_DOWN:
+                    elif event.key == pygame.K_RIGHT:
                         self.change_direction((0, 1))
+                    elif event.key == pygame.K_UP:
+                        self.change_direction((-1, 0))
+                    elif event.key == pygame.K_DOWN:
+                        self.change_direction((1, 0))
                 
             self.render_game()
             self.time_passed += clock.tick(30)
