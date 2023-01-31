@@ -120,7 +120,7 @@ class TraceGame(Game):
                     # Check if the user clicks on a circle
                     for i in range(5):
                         for j in range(5):
-                            circle = pygame.Rect(i*100, j*100, 80, 80)
+                            circle = pygame.Rect(j*100, i*100, 80, 80)
                             if circle.collidepoint(pos):
                                 # Check if the matrix value is not 0
                                 if self.matrix[i][j] > 0:

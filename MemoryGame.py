@@ -21,7 +21,7 @@ class MemoryGame(Game):
     def show_pattern(self):
         """ Runs the animation to show the current pattern """
 
-        self.matrix = [[0 for _ in range(self.row_num)] for _ in range(self.col_num)]
+        self.matrix = [[0 for _ in range(self.col_num)] for _ in range(self.row_num)]
         self.render_game()
         pygame.time.wait(500)
 
@@ -39,7 +39,7 @@ class MemoryGame(Game):
             pygame.time.wait(700)
             self.matrix[x][y] = 0
     
-        self.matrix = [[0 for _ in range(self.row_num)] for _ in range(self.col_num)]
+        self.matrix = [[0 for _ in range(self.col_num)] for _ in range(self.row_num)]
         self.render_game()
         pygame.time.wait(300)
         self.time_passed = 0
@@ -117,9 +117,9 @@ class MemoryGame(Game):
                     pos = pygame.mouse.get_pos()
 
                     # Check if the user clicks on a circle
-                    for i in range(self.col_num):
-                        for j in range(self.row_num):
-                            circle = pygame.Rect(i*100, j*100, 80, 80)
+                    for i in range(self.row_num):
+                        for j in range(self.col_num):
+                            circle = pygame.Rect(j*100, i*100, 80, 80)
                             if circle.collidepoint(pos):
                                 # Check if the corect circle is clicked
                                 if (i, j) == self.pattern[current_index]:
