@@ -13,7 +13,7 @@ class Game:
         self.row_num, self.col_num = 5, 5
 
         # Initialises matrix grid with 0's
-        self.matrix = [[0 for _ in range(self.row_num)] for _ in range(self.col_num)]
+        self.matrix = [[0 for _ in range(self.col_num)] for _ in range(self.row_num)]
 
         # Size of the game window
         self.update_screen()
@@ -22,13 +22,25 @@ class Game:
         self.give_up_button = pygame.Rect(self.width//2 - 50, self.height - 60, 100, 50)
         
         # Create a dictionary to map matrix values to colors
-        self.colors = {0: (128, 128, 128),  # grey
+        self.colors = {
+                0: (128, 128, 128),    # grey
                 1: (0, 255, 0),        # green
                 2: (255, 255, 0),      # yellow
                 3: (255, 0, 0),        # red
                 4: (64, 224, 208),     # turquoise
                 5: (32, 112, 208),     # blue
-                6: (0, 0, 0)           # black
+                6: (0, 0, 0),          # black
+                7: (138,43,226),       # purple
+                8: (245, 66, 152),     # pink
+                9: (156, 25, 49),      # maroon
+                10: (24, 71, 27),      # dark green
+                11: (89, 47, 28),      # brown
+                12: (144, 245, 151),   # pale green
+                13: (162, 173, 36),    # mustard
+                14: (0, 0, 0),         # white
+                15: (214, 113, 4),     # orange
+                16: (32, 19, 209),     # dark blue
+                17: (184, 93, 81),     # pale red
                 }     
         
         self.game_difficulty = difficulty.NONE
@@ -40,8 +52,9 @@ class Game:
 
     def update_screen(self):
         """ Updates screen size """
-        self.width = self.row_num * 100
-        self.height = self.col_num * 100 + 60
+
+        self.width = self.col_num * 100
+        self.height = self.row_num * 100 + 60
         self.size = (self.width, self.height)
         self.screen = pygame.display.set_mode(self.size)
 
@@ -60,18 +73,18 @@ class Game:
         give_up_text = font.render("Highscore: " + str(self.highscore), True, (255,255,255))
         self.screen.blit(give_up_text, (self.width//2 - ((11 + len(str(self.highscore))) * 5) , self.height - 45))
 
-        for _ in range(3):
+        for _ in range(1):
             for num in [0, 1]:
-                matrix = [[num for _ in range(self.row_num)] for _ in range(self.col_num)]
-                # Draw the circles
-                for i in range(self.col_num):
-                    for j in range(self.row_num):
+                matrix = [[num for _ in range(self.col_num)] for _ in range(self.row_num)]
+                # Draw the circles 
+                for i in range(self.row_num):
+                    for j in range(self.col_num):
                         color = self.colors[matrix[i][j]]
-                        gfxdraw.aacircle(self.screen, (i*100+50), (j*100+50), 40, color)
-                        gfxdraw.filled_circle(self.screen, (i*100+50), (j*100+50), 40, color)
+                        gfxdraw.aacircle(self.screen, (j*100+50), (i*100+50), 40, color)
+                        gfxdraw.filled_circle(self.screen, (j*100+50), (i*100+50), 40, color)
                 pygame.event.pump()
                 pygame.display.flip()
-                pygame.time.wait(500)
+                pygame.time.wait(250)
         self.update_screen()
 
     def lose(self):
@@ -79,8 +92,7 @@ class Game:
 
         self.update_screen()
 
-        if self.score > self.highscore:
-            self.update_highscore()
+        self.update_highscore()
 
         font = pygame.font.Font(None, 25)
         # Draw the score
@@ -93,13 +105,13 @@ class Game:
 
         for _ in range(3):
             for num in [0,3]:
-                matrix = [[num for _ in range(self.row_num)] for _ in range(self.col_num)]
+                matrix = [[num for _ in range(self.col_num)] for _ in range(self.row_num)]
                 # Draw the circles
-                for i in range(self.col_num):
-                    for j in range(self.row_num):
+                for i in range(self.row_num):
+                    for j in range(self.col_num):
                         color = self.colors[matrix[i][j]]
-                        gfxdraw.aacircle(self.screen, (i*100+50), (j*100+50), 40, color)
-                        gfxdraw.filled_circle(self.screen, (i*100+50), (j*100+50), 40, color)
+                        gfxdraw.aacircle(self.screen, (j*100+50), (i*100+50), 40, color)
+                        gfxdraw.filled_circle(self.screen, (j*100+50), (i*100+50), 40, color)                
                 pygame.event.pump()
                 pygame.display.flip()
                 pygame.time.wait(500)
@@ -121,20 +133,21 @@ class Game:
         else:
             self.highscore = highscores[self.game]
 
-    def update_highscore(self):
+    def update_highscore(self, reverse=False):
         """ Updates the highscore for he current game """
 
-        with open("high_scores.json", "r+") as f:
-            highscores = json.load(f)
-            if self.game_difficulty != difficulty.NONE:
-                highscores[self.game][self.game_difficulty.name] = self.score
-            else:
-                highscores[self.game] = self.score
-            f.seek(0)
-            json.dump(highscores, f)
-            f.truncate()
+        if ((reverse == False) and (self.score > self.highscore)) or ((reverse == True) and (self.score < self.highscore)):
+            with open("high_scores.json", "r+") as f:
+                highscores = json.load(f)
+                if self.game_difficulty != difficulty.NONE:
+                    highscores[self.game][self.game_difficulty.name] = self.score
+                else:
+                    highscores[self.game] = self.score
+                f.seek(0)
+                json.dump(highscores, f)
+                f.truncate()
 
-        self.highscore = self.score
+            self.highscore = self.score
 
     def run(self):
         """ Main game loop for the game """
@@ -158,20 +171,19 @@ class Game:
         self.screen.blit(self.give_up_text, (self.give_up_button.x + (self.give_up_button.width/2 - self.give_up_text.get_width()/2), self.give_up_button.y + (self.give_up_button.height/2 - self.give_up_text.get_height()/2)))
         pygame.draw.rect(self.screen, (255, 0, 0), self.give_up_button, 2)
 
-
         # Draw the circles
-        for i in range(self.col_num):
-            for j in range(self.row_num):
+        for i in range(self.row_num):
+            for j in range(self.col_num):
                 color = self.colors[self.matrix[i][j]]
-                gfxdraw.aacircle(self.screen, (i*100+50), (j*100+50), 40, color)
-                gfxdraw.filled_circle(self.screen, (i*100+50), (j*100+50), 40, color)
+                gfxdraw.aacircle(self.screen, (j*100+50), (i*100+50), 40, color)
+                gfxdraw.filled_circle(self.screen, (j*100+50), (i*100+50), 40, color)
 
         # Draw the score
         score_text = font.render("Score: " + str(self.score), True, (255, 255, 255))
         self.screen.blit(score_text, (self.width - ((7.55 + min(4, len(str(self.highscore)))) * 11), self.give_up_button.y - 15 + (self.give_up_button.height/2 - self.give_up_text.get_height()/2)))
         # Draw the highscore
-        highscore_text = font.render("Highscore: " + str(self.highscore), True, (255, 255, 255))
-        self.screen.blit(highscore_text, (self.width - ((11 + min(4, len(str(self.highscore)))) * 11), 15 + self.give_up_button.y + (self.give_up_button.height/2 - self.give_up_text.get_height()/2)))
+        highscore_text = font.render("Best score: " + str(self.highscore), True, (255, 255, 255))
+        self.screen.blit(highscore_text, (self.width - ((12 + min(4, len(str(self.highscore)))) * 11), 15 + self.give_up_button.y + (self.give_up_button.height/2 - self.give_up_text.get_height()/2)))
 
         # Calculate the time remaining
         time_remaining = round(self.max_time - (self.time_passed / 1000), 2)
@@ -244,14 +256,24 @@ class Game:
             if self.game_difficulty == difficulty.EASY:
                 self.row_num = 4
                 self.col_num = 4
-            if self.game_difficulty == difficulty.MEDIUM:
+            elif self.game_difficulty == difficulty.MEDIUM:
                 self.row_num = 5
                 self.col_num = 5
-            if self.game_difficulty == difficulty.HARD:
+            elif self.game_difficulty == difficulty.HARD:
                 self.row_num = 6
                 self.col_num = 6
-
-        self.matrix = [[0 for _ in range(self.row_num)] for _ in range(self.col_num)]
+        elif self.game == "Matching":
+            if self.game_difficulty == difficulty.EASY:
+                self.row_num = 2
+                self.col_num = 5
+            elif self.game_difficulty == difficulty.MEDIUM:
+                self.row_num = 4
+                self.col_num = 5
+            elif self.game_difficulty == difficulty.HARD:
+                self.row_num = 6
+                self.col_num = 5
+        self.matrix = [[0 for _ in range(self.col_num)] for _ in range(self.row_num)]
+        
         self.get_highscore()
         self.run()
 
